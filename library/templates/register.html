@@ -1,0 +1,31 @@
+{% extends "index_no_nav.html" %}
+{% block content %}
+	<script type="text/javascript" >
+	    $(document).ready(function(){
+	        $("#id_username").attr('placeholder', '{{uform.username.label}}');
+	        $("#id_username").attr('class', 'input-lg');
+	        $("#id_password1").attr('placeholder', '{{uform.password1.label}}');
+	        $("#id_password1").attr('class', 'input-lg');
+	        $("#id_password2").attr('placeholder', '{{uform.password2.label}}');
+	        $("#id_password2").attr('class', 'input-lg');
+	    });
+	</script>
+	{% load staticfiles %}
+	<form action="" style="padding-top: 4%;" align="center" method="post">
+		{% csrf_token %}
+		<div class="row" style="padding-bottom: 1%;"> 
+			{{ uform.username.errors }}
+			{{ uform.username }}
+		</div>
+		<div class="row" style="padding-bottom: 1%;"> 
+			{{ uform.password1.errors }}
+			{{ uform.password1 }}
+		</div>
+		<div class="row" style="padding-bottom: 1%;"> 
+			{{ uform.password2.errors }}
+			{{ uform.password2 }}
+		</div>
+		
+		<button class="btn btn-info btn-lg" type="submit">Submit</button>
+    </form>
+{% endblock %}

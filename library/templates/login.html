@@ -1,0 +1,25 @@
+{% extends "index_no_nav.html" %}
+{% block content %}
+	<form method="POST" action="/login/" align="center">
+		{% csrf_token %}
+		{% if next %}
+			<input type="hidden" name="next" value="{{ next }}" />
+		{% endif %}
+		<h1>Enter your credentials</h1>
+		{{ state }}
+		<div class="col-xs-12" style="padding-top: 6%; padding-bottom: 6%">
+			<div class="row" style="padding-bottom: 1%;"> 
+				<input class="input-lg" type="text" id="username" name="username" placeholder="Your username" size="35"></input>
+			</div>
+			<div class="row" style="padding-bottom: 1%;">
+				<input class="input-lg" type="password" name="password" id="password" placeholder="Your password" size="35"></input>
+			</div>
+			<button class="btn btn-info btn-lg" type="submit">Login</button>
+		</div>
+	</form>
+	<div align="center">
+		<h2>Not a member?</h2>
+		<br>
+		<a href="/register/" class="btn btn-info btn-lg">Sign up</a>
+	</div>
+{% endblock %}

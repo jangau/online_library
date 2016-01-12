@@ -1,0 +1,15 @@
+{% extends "index.html" %}
+{% block content %}
+    <div class="row row-offcanvas row-offcanvas-right">
+      <div class="col-xs-12">
+      	{% for book in books %}
+      		<a href="{% url "book" id_book=book.id_book %}">
+	      		<div class='col-xs-3'>
+		          	<h2> {{ book.title }} </h2>
+					<a>  <img src="{{ book.image.url }}"> </a>
+			 	</div>
+			 </a>
+		 {% endfor %}
+      </div>
+    </div>
+{% endblock %}

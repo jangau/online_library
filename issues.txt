@@ -1,0 +1,8 @@
+1) Click home -> Home not active anymore
+2) Sign up different from Log in (color wise) ???
+3) Search bar seems a bit off
+4) Can't get back to home from Log in/Sign up screen
+5) Review font color
+6) Borrow/Reserver different color than Submit (color wise) ???
+7) Home page: add book view container?
+8) 
