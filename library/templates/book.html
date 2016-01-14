@@ -15,7 +15,7 @@
 			</div>
                 <div class="col-xs-6">
 				<div class="row" style="padding-bottom: 3%">
-					<button class="btn btn-info btn-lg pull-right" href="#borrow_link">Borrow book</button>
+					<a class="btn btn-info btn-lg pull-right" href="{% url "borrow" id_book=book.id_book %}">Borrow book</a>
 				</div>
 				<div class="row">
 					<button class="btn btn-info btn-lg pull-right" href="#borrow_link">Reserve book</button>

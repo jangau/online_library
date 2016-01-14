@@ -4,7 +4,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
+from django.http import HttpResponseRedirect
 from django.contrib.auth.forms import UserCreationForm
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.core import serializers
@@ -80,7 +80,33 @@ def show_book(request, id_book):
     else:
         rating = "No reviews yet"
 
-    return render_to_response("book.html", RequestContext(request,
+    return render_to_response("book.html", context_instance=RequestContext(request,
+        {'authenticated': authenticated, 'book': book, 'reviews': reviews, 'review_form': review_form, 'rating':rating} ))
+
+
+def borrow_book(request, id_book):
+    authenticated = False
+    if request.user.is_authenticated():
+        authenticated = True
+
+    book = Book.objects.get(id_book=id_book)
+    if request.method == 'POST':
+        review_form = ReviewForm(request.POST)
+        if review_form.is_valid():
+            new_review = review_form.save(commit=False)
+            new_review.book = book
+            new_review.user = request.user
+            new_review.save()
+
+    reviews = Review.objects.filter(book=book)
+    review_form = ReviewForm()
+
+    if len(reviews):
+        rating = round(sum([float(review.rating) for review in reviews])/len(reviews), 2)
+    else:
+        rating = "No reviews yet"
+
+    return render_to_response("book_borrow.html", context_instance=RequestContext(request,
         {'authenticated': authenticated, 'book': book, 'reviews': reviews, 'review_form': review_form, 'rating':rating} ))
 
 
@@ -105,9 +131,25 @@ def search(request):
         query_string = request.GET['q']
         book_query = get_query(query_string, ['title', 'author', 'genre'])
         found_books = Book.objects.filter(book_query).order_by('title')
-
-    return render_to_response("home.html", {'authenticated': authenticated,
-                                            'books': found_books})
+        return render_to_response("home.html", {'authenticated': authenticated,
+                                                'books': found_books})
+    else:
+        search_results = Book.objects.all()
+        if ('title' in request.GET) and request.GET['title'].strip():
+            title_string = request.GET['title']
+            book_query = get_query(title_string, ['title'])
+            search_results = search_results.filter(book_query)
+        if ('author' in request.GET) and request.GET['author'].strip():
+            author_string = request.GET['author']
+            book_query = get_query(author_string, ['author'])
+            search_results = search_results.filter(book_query)
+        if ('genre' in request.GET) and request.GET['genre'].strip():
+            genre_string = request.GET['genre']
+            book_query = get_query(genre_string, ['genre'])
+            search_results = search_results.filter(book_query)
+        found_books = search_results.order_by('title')
+        return render_to_response("advanced_search.html", {'authenticated': authenticated,
+                                                           'books': found_books})
 
 
 @csrf_exempt

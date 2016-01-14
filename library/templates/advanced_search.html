@@ -1,0 +1,29 @@
+{% extends "index.html" %}
+{% block content %}
+    <form action="/search/" align="center" method="get">
+      <div class="col-xs-12" style="padding-top: 6%; padding-bottom: 6%">
+        <div class="row" style="padding-bottom: 1%;"> 
+          <input class="input-lg" type="text" name="title" id="id_title" class="form-control" placeholder="Filter by title"/>
+        </div>
+        <div class="row" style="padding-bottom: 1%;"> 
+          <input class="input-lg" type="text" name="author" id="id_author" class="form-control" placeholder="Filter by author"/>
+        </div>
+        <div class="row" style="padding-bottom: 1%;"> 
+          <input class="input-lg" type="text" name="genre" id="id_genre" class="form-control" placeholder="Filter by genre"/>
+        </div>
+        <button class="btn btn-info btn-lg" type="submit">Apply filters</button>
+      </div>
+    </form>
+    <div class="row row-offcanvas row-offcanvas-right">
+      <div class="col-xs-12">
+        {% for book in books %}
+            <a href="{% url "book" id_book=book.id_book %}">
+                <div class='col-xs-3'>
+                    <h2> {{ book.title }} </h2>
+                    <a>  <img src="{{ book.image.url }}"> </a>
+                </div>
+             </a>
+         {% endfor %}
+      </div>
+    </div>
+{% endblock %}

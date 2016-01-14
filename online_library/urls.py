@@ -24,8 +24,10 @@ urlpatterns = [
     url(r'^admin/', admin.super.urls),
     url(r'^home/', views.home),
     url(r'^book/(?P<id_book>\d+)/$', views.show_book, name='book'),
+    url(r'^borrow/(?P<id_book>\d+)/$', views.borrow_book, name='borrow'),
     url(r'^login/$', views.login_user),
     url(r'^search/$', views.search),
+    url(r'^filter/$', views.search),
     url(r'^register/', views.register_user),
     url(
         r'^logout/$',
