@@ -29,6 +29,10 @@ urlpatterns = [
     url(r'^search/$', views.search),
     url(r'^filter/$', views.search),
     url(r'^register/', views.register_user),
+    url(r'^reserve/(?P<id_book>\d+)/$', views.reserve_book, name='reserve'),
+    url(r'^donate/$', views.donate),
+    url(r'^suggest/$', views.suggest),
+    url(r'^profile/$', views.show_profile),
     url(
         r'^logout/$',
         auth_views.logout,

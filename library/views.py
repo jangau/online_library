@@ -90,24 +90,9 @@ def borrow_book(request, id_book):
         authenticated = True
 
     book = Book.objects.get(id_book=id_book)
-    if request.method == 'POST':
-        review_form = ReviewForm(request.POST)
-        if review_form.is_valid():
-            new_review = review_form.save(commit=False)
-            new_review.book = book
-            new_review.user = request.user
-            new_review.save()
-
-    reviews = Review.objects.filter(book=book)
-    review_form = ReviewForm()
-
-    if len(reviews):
-        rating = round(sum([float(review.rating) for review in reviews])/len(reviews), 2)
-    else:
-        rating = "No reviews yet"
 
     return render_to_response("book_borrow.html", context_instance=RequestContext(request,
-        {'authenticated': authenticated, 'book': book, 'reviews': reviews, 'review_form': review_form, 'rating':rating} ))
+        {'authenticated': authenticated, 'book': book}))
 
 
 def home(request):
@@ -171,6 +156,7 @@ def login_user(request):
             state = "Your username and/or password were incorrect."
     return render_to_response('login.html', {'state':state, 'username': username})
 
+
 @csrf_protect
 def register_user(request):
     if request.method == 'POST':
@@ -184,3 +170,41 @@ def register_user(request):
         'uform': uform},
         context_instance=RequestContext(request)
     )
+
+
+def reserve_book(request, id_book):
+    authenticated = False
+    if request.user.is_authenticated():
+        authenticated = True
+
+    book = Book.objects.get(id_book=id_book)
+
+    return render_to_response("book_borrow.html", context_instance=RequestContext(request,
+        {'authenticated': authenticated, 'book': book}))
+
+
+def donate(request):
+    authenticated = False
+    if request.user.is_authenticated():
+        authenticated = True
+
+    return render_to_response("book_donate.html", context_instance=RequestContext(request,
+        {'authenticated': authenticated}))
+
+
+def suggest(request):
+    authenticated = False
+    if request.user.is_authenticated():
+        authenticated = True
+
+    return render_to_response("book_suggest.html", context_instance=RequestContext(request,
+        {'authenticated': authenticated}))
+
+
+def show_profile(request):
+    authenticated = False
+    if request.user.is_authenticated():
+        authenticated = True
+
+    return render_to_response("profile.html", context_instance=RequestContext(request,
+        {'authenticated': authenticated}))

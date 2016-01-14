@@ -19,7 +19,9 @@
 		<div id="headerContainer">
 		<div id="buttonsContainer">
 			<div class="col-xs-2">
-				<img src="../../static/logo.jpg" align="left" class="img-rounded" id="image" width="50" height="50"></img>
+                <a href="/home/">
+				<img src="../../static/logo.jpg"  align="left" class="img-rounded" id="image" width="50" height="50">
+                </a>
 			</div>
 			<div class="col-xs-10" align="right">
 				{% if authenticated %}
@@ -49,7 +51,9 @@
             <ul class="nav navbar-nav">
               <li class="active"><a href="/home/">Home</a></li>
               <li><a href="/filter/">Advanced Search</a></li>
-			  <li><a href="#">Suggest/Donate</a></li>
+			  <li><a href="/suggest/">Suggest</a></li>
+			  <li><a href="/donate/">Donate</a></li>
+			  <li><a href="/profile/">Profile</a></li>
             </ul>
           </div>
           
