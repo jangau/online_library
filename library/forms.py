@@ -4,7 +4,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy
 from django.forms.models import ModelForm
-from models import Review
+from models import Review, Borrow
 from django.forms.fields import ChoiceField, CharField
 from django.utils.safestring import mark_safe
 
@@ -18,6 +18,21 @@ class ReviewForm(ModelForm):
     choices = [('1', 'Very poor'), ('2', 'Poor'), ('3', 'Not bad'), ('4', 'Good'), ('5', 'Very Good')]
     rating = ChoiceField(choices=choices, widget=forms.RadioSelect(renderer=HorizontalRadioRenderer))
     opinion = CharField(widget=forms.Textarea)
+
     class Meta:
         fields = ['rating', 'opinion']
         model = Review
+
+
+class DateInput(forms.DateInput):
+    input_type = 'date'
+
+
+class BorrowForm(forms.ModelForm):
+    class Meta:
+        model = Borrow
+        fields = ['date_borrowed', 'date_return']
+        widgets = {
+            'date_borrowed': DateInput(),
+            'date_return': DateInput()
+        }

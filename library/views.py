@@ -9,7 +9,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.core import serializers
 from models import Book, Borrow, Library, Reserve, Review
-from forms import ReviewForm
+from forms import ReviewForm, BorrowForm
 from django.db.models import Q
 
 
@@ -72,6 +72,7 @@ def show_book(request, id_book):
             new_review.user = request.user
             new_review.save()
 
+    # TODO: Get reviews by ISBN not by book
     reviews = Review.objects.filter(book=book)
     review_form = ReviewForm()
 
@@ -84,22 +85,50 @@ def show_book(request, id_book):
         {'authenticated': authenticated, 'book': book, 'reviews': reviews, 'review_form': review_form, 'rating':rating} ))
 
 
+@csrf_exempt
 def borrow_book(request, id_book):
+    authenticated = False
+    borrowed = False
+    if request.user.is_authenticated():
+        authenticated = True
+    book = Book.objects.get(id_book=id_book)
+
+    if request.method == 'POST':
+        borrow_form = BorrowForm(request.POST)
+        if borrow_form.is_valid():
+            borrowed_book = borrow_form.save(commit=False)
+            borrowed_book.book = book
+            borrowed_book.user = request.user
+            borrowed_book.save()
+            borrowed = True
+
+    form = BorrowForm()
+
+    return render_to_response("book_borrow.html", context_instance=RequestContext(request,
+        {'authenticated': authenticated, 'book': book, 'form': form, 'borrowed': borrowed}))
+
+
+def borrow(request):
     authenticated = False
     if request.user.is_authenticated():
         authenticated = True
-
-    book = Book.objects.get(id_book=id_book)
-
-    return render_to_response("book_borrow.html", context_instance=RequestContext(request,
-        {'authenticated': authenticated, 'book': book}))
-
+    print 'borrow'
+    return render_to_response("home.html", {'authenticated': authenticated,
+                                                'borrowed': True})
 
 def home(request):
     authenticated = False
     if request.user.is_authenticated():
         authenticated = True
-    books = Book.objects.all()
+    distinct_books = Book.objects.values('title', 'author', 'genre', 'ISBN').distinct()
+    books = []
+    for distinct_book in distinct_books:
+        first_book = Book.objects.filter(ISBN=distinct_book['ISBN']).first()
+        for check_book in Book.objects.filter(ISBN=first_book.ISBN):
+            if not Borrow.objects.filter(book=check_book).exists():
+                first_book = check_book
+                break
+        books.append(first_book)
 
     return render_to_response("home.html", {'authenticated': authenticated, 'books': books})
 

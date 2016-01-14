@@ -5,6 +5,7 @@ from PIL import Image
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
+from django import forms
 
 
 class Library(models.Model):
@@ -19,9 +20,9 @@ class Library(models.Model):
 class Book(models.Model):
     id_book = models.AutoField(primary_key=True)
     ISBN = models.CharField(max_length=13, default="1111111111111", validators=[RegexValidator(regex='^.{13}$', message='Length has to be 13', code='nomatch')])
-    title = models.CharField(max_length=100)
-    author = models.CharField(max_length=100)
-    genre = models.CharField(max_length=100)
+    title = models.CharField(max_length=100, blank=True)
+    author = models.CharField(max_length=100,  blank=True)
+    genre = models.CharField(max_length=100,  blank=True)
     image = models.ImageField(upload_to='book_covers/', blank=True)
     library = models.ForeignKey(Library)
 
@@ -29,6 +30,13 @@ class Book(models.Model):
         return "{}_{}".format(self.id_book, self.title)
 
     def save(self):
+        book = Book.objects.filter(ISBN=self.ISBN).first()
+        if book is not None:
+            self.title = book.title
+            self.author = book.author
+            self.genre = book.genre
+            self.image = book.image
+
         if not self.image:
             return
 
@@ -49,16 +57,14 @@ class Book(models.Model):
         nr = len(Book.objects.filter(ISBN=self.ISBN))
         nrBorrowed = 0
         nrReserved = 0
-
         for borrowBook in Borrow.objects.all():
-            book = Book.get(borrowBook.id())
-            if book.ISBN == self.ISBN:
+            if borrowBook.book.ISBN == self.ISBN:
                 nrBorrowed += 1
 
-        for reservedBook in Reserve.objects.all():
-            book = Book.get(reservedBook.id())
-            if book.ISBN == self.ISBN:
-                nrReserved += 1
+        # for reservedBook in Reserve.objects.all():
+        #     book = Book.get(reservedBook.id())
+        #     if book.ISBN == self.ISBN:
+        #         nrReserved += 1
 
         nr = nr - nrBorrowed - nrReserved
         return nr
