@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django import forms
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
@@ -29,6 +31,24 @@ class DateInput(forms.DateInput):
 
 
 class BorrowForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(BorrowForm, self).__init__(*args, **kwargs)
+
+        self.fields['date_borrowed'].required = True
+        self.fields['date_return'].required = True
+
+    def clean(self):
+        cleaned_data = super(BorrowForm, self).clean()
+        cleaned_date_borrowed = cleaned_data.get('date_borrowed')
+        cleaned_date_returned = cleaned_data.get('date_return')
+        if cleaned_date_borrowed and cleaned_date_returned:
+            if datetime.now().date() > cleaned_date_borrowed:
+                raise forms.ValidationError(u"Can't set date in the past! ")
+            if cleaned_date_borrowed + timedelta(days=21) <= cleaned_date_returned:
+                raise forms.ValidationError(u"Return date must be less than 21 days")
+        return cleaned_data
+
     class Meta:
         model = Borrow
         fields = ['date_borrowed', 'date_return']

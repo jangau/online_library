@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -92,17 +93,16 @@ def borrow_book(request, id_book):
     if request.user.is_authenticated():
         authenticated = True
     book = Book.objects.get(id_book=id_book)
+    form = BorrowForm(request.POST or None)
 
     if request.method == 'POST':
-        borrow_form = BorrowForm(request.POST)
-        if borrow_form.is_valid():
-            borrowed_book = borrow_form.save(commit=False)
+        if form.is_valid():
+            borrowed_book = form.save(commit=False)
             borrowed_book.book = book
             borrowed_book.user = request.user
             borrowed_book.save()
             borrowed = True
 
-    form = BorrowForm()
 
     return render_to_response("book_borrow.html", context_instance=RequestContext(request,
         {'authenticated': authenticated, 'book': book, 'form': form, 'borrowed': borrowed}))
@@ -125,7 +125,8 @@ def home(request):
     for distinct_book in distinct_books:
         first_book = Book.objects.filter(ISBN=distinct_book['ISBN']).first()
         for check_book in Book.objects.filter(ISBN=first_book.ISBN):
-            if not Borrow.objects.filter(book=check_book).exists():
+            if not Borrow.objects.filter(book=check_book).exists()\
+               or Borrow.objects.filter(date_return__lte=datetime.now().date(), book=check_book).exists():
                 first_book = check_book
                 break
         books.append(first_book)

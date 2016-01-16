@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+from datetime import datetime
+
 from PIL import Image
 
 from django.db import models
@@ -58,7 +60,7 @@ class Book(models.Model):
         nrBorrowed = 0
         nrReserved = 0
         for borrowBook in Borrow.objects.all():
-            if borrowBook.book.ISBN == self.ISBN:
+            if borrowBook.book.ISBN == self.ISBN and borrowBook.date_return <= datetime.now().date():
                 nrBorrowed += 1
 
         # for reservedBook in Reserve.objects.all():
