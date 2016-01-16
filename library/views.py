@@ -10,7 +10,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.core import serializers
 from models import Book, Borrow, Library, Reserve, Review
-from forms import ReviewForm, BorrowForm
+from forms import ReviewForm, BorrowForm, ReserveForm
 from django.db.models import Q
 
 
@@ -108,6 +108,14 @@ def borrow_book(request, id_book):
         {'authenticated': authenticated, 'book': book, 'form': form, 'borrowed': borrowed}))
 
 
+def borrow(request):
+    authenticated = False
+    if request.user.is_authenticated():
+        authenticated = True
+    print 'borrow'
+    return render_to_response("home.html", {'authenticated': authenticated,
+                                                'borrowed': True})
+
 @csrf_exempt
 def reserve_book(request, id_book):
     authenticated = False
@@ -129,15 +137,14 @@ def reserve_book(request, id_book):
 
     return render_to_response("book_reserve.html", context_instance=RequestContext(request,
         {'authenticated': authenticated, 'book': book, 'form': form, 'reserved': reserved}))
-        
-        
-def borrow(request):
+
+def reserve(request):
     authenticated = False
     if request.user.is_authenticated():
         authenticated = True
-    print 'borrow'
+    print 'reserve'
     return render_to_response("home.html", {'authenticated': authenticated,
-                                                'borrowed': True})
+                                                'reserved': True})
 
 def home(request):
     authenticated = False
@@ -223,17 +230,6 @@ def register_user(request):
         'uform': uform},
         context_instance=RequestContext(request)
     )
-
-
-def reserve_book(request, id_book):
-    authenticated = False
-    if request.user.is_authenticated():
-        authenticated = True
-
-    book = Book.objects.get(id_book=id_book)
-
-    return render_to_response("book_borrow.html", context_instance=RequestContext(request,
-        {'authenticated': authenticated, 'book': book}))
 
 
 def donate(request):

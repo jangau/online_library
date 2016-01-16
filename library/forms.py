@@ -6,7 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy
 from django.forms.models import ModelForm
-from models import Review, Borrow
+from models import Review, Borrow, Reserve
 from django.forms.fields import ChoiceField, CharField
 from django.utils.safestring import mark_safe
 
@@ -65,6 +65,11 @@ class BorrowForm(forms.ModelForm):
         
 
 class ReserveForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(ReserveForm, self).__init__(*args, **kwargs)
+
+        self.fields['period'].required = True
+
     class Meta:
         model = Reserve
         fields = ['period']
