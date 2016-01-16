@@ -10,7 +10,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.core import serializers
 from models import Book, Borrow, Library, Reserve, Review, Profile
-from forms import ReviewForm, BorrowForm, ProfileForm
+from forms import ReviewForm, BorrowForm, ReserveForm, ProfileForm
 from django.db.models import Q
 
 
@@ -106,6 +106,37 @@ def borrow_book(request, id_book):
     return render_to_response("book_borrow.html", context_instance=RequestContext(request,
         {'authenticated': authenticated, 'book': book, 'form': form, 'borrowed': borrowed}))
 
+
+@csrf_exempt
+def reserve_book(request, id_book):
+    authenticated = False
+    reserved = False
+    if request.user.is_authenticated():
+        authenticated = True
+    book = Book.objects.get(id_book=id_book)
+
+    if request.method == 'POST':
+        reserve_form = ReserveForm(request.POST)
+        if reserve_form.is_valid():
+            reserved_book = reserve_form.save(commit=False)
+            reserved_book.book = book
+            reserved_book.user = request.user
+            reserved_book.save()
+            reserved = True
+
+    form = ReserveForm()
+
+    return render_to_response("book_reserve.html", context_instance=RequestContext(request,
+        {'authenticated': authenticated, 'book': book, 'form': form, 'reserved': reserved}))
+
+def reserve(request):
+    authenticated = False
+    if request.user.is_authenticated():
+        authenticated = True
+    print 'reserve'
+    return render_to_response("home.html", {'authenticated': authenticated,
+                                                'reserved': True})
+
 def home(request):
     authenticated = False
     if request.user.is_authenticated():
@@ -190,17 +221,6 @@ def register_user(request):
         'uform': uform},
         context_instance=RequestContext(request)
     )
-
-
-def reserve_book(request, id_book):
-    authenticated = False
-    if request.user.is_authenticated():
-        authenticated = True
-
-    book = Book.objects.get(id_book=id_book)
-
-    return render_to_response("book_borrow.html", context_instance=RequestContext(request,
-        {'authenticated': authenticated, 'book': book}))
 
 
 def donate(request):

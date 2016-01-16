@@ -6,7 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy
 from django.forms.models import ModelForm
-from models import Review, Borrow, Profile
+from models import Review, Borrow, Reserve, Profile
 from django.forms.fields import ChoiceField, CharField
 from django.utils.safestring import mark_safe
 
@@ -34,6 +34,10 @@ class DateInput(forms.DateInput):
     input_type = 'date'
 
 
+class NumberInput(forms.NumberInput):
+    input_type = 'number'
+
+
 class BorrowForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
@@ -59,6 +63,20 @@ class BorrowForm(forms.ModelForm):
         widgets = {
             'date_borrowed': DateInput(),
             'date_return': DateInput()
+        }
+
+
+class ReserveForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(ReserveForm, self).__init__(*args, **kwargs)
+
+        self.fields['period'].required = True
+
+    class Meta:
+        model = Reserve
+        fields = ['period']
+        widgets = {
+            'period': NumberInput()
         }
 
 
