@@ -66,11 +66,21 @@ class BorrowForm(forms.ModelForm):
         }
 
 
-class ReserveForm(ModelForm):
+class ReserveForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ReserveForm, self).__init__(*args, **kwargs)
 
         self.fields['period'].required = True
+
+    def clean(self):
+        cleaned_data = super(ReserveForm, self).clean()
+        cleaned_period = cleaned_data.get('period')
+        if cleaned_period:
+            if cleaned_period < 1:
+                raise forms.ValidationError(u"Can't reserve for less than one day! ", code='invalid')
+            if cleaned_period > 14:
+                raise forms.ValidationError(u"Can't reserve for more than 14 days! ", code='invalid')
+        return cleaned_data
 
     class Meta:
         model = Reserve
