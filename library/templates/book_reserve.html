@@ -1,5 +1,17 @@
 {% extends "index.html" %}
-{% block content %}     
-    Reserve book
+{% block content %}
+    {% if reserved %}
+        Successful reserve!
+    {% else %}
+    <form action="" align="center" method="post">
+      <div class="col-xs-12" style="padding-top: 6%; padding-bottom: 6%">
+        <div class="row" style="padding-bottom: 1%;">
+          <input class="input-lg" type="text" name="title" id="id_title" class="form-control" placeholder={{ book.id_book }} disabled/>
+        </div>
+        {{ form.as_p }}
+        <button class="btn btn-info btn-lg" type="submit">Reserve</button>
+      </div>
+    </form>
+    {% endif %}
 
 {% endblock %}

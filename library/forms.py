@@ -30,6 +30,10 @@ class DateInput(forms.DateInput):
     input_type = 'date'
 
 
+class NumberInput(forms.NumberInput):
+    input_type = 'number'
+
+    
 class BorrowForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
@@ -37,6 +41,8 @@ class BorrowForm(forms.ModelForm):
 
         self.fields['date_borrowed'].required = True
         self.fields['date_return'].required = True
+
+        
 
     def clean(self):
         cleaned_data = super(BorrowForm, self).clean()
@@ -55,4 +61,13 @@ class BorrowForm(forms.ModelForm):
         widgets = {
             'date_borrowed': DateInput(),
             'date_return': DateInput()
+        }
+        
+
+class ReserveForm(ModelForm):
+    class Meta:
+        model = Reserve
+        fields = ['period']
+        widgets = {
+            'period': NumberInput()
         }

@@ -108,6 +108,29 @@ def borrow_book(request, id_book):
         {'authenticated': authenticated, 'book': book, 'form': form, 'borrowed': borrowed}))
 
 
+@csrf_exempt
+def reserve_book(request, id_book):
+    authenticated = False
+    reserved = False
+    if request.user.is_authenticated():
+        authenticated = True
+    book = Book.objects.get(id_book=id_book)
+
+    if request.method == 'POST':
+        reserve_form = ReserveForm(request.POST)
+        if reserve_form.is_valid():
+            reserved_book = reserve_form.save(commit=False)
+            reserved_book.book = book
+            reserved_book.user = request.user
+            reserved_book.save()
+            reserved = True
+
+    form = ReserveForm()
+
+    return render_to_response("book_reserve.html", context_instance=RequestContext(request,
+        {'authenticated': authenticated, 'book': book, 'form': form, 'reserved': reserved}))
+        
+        
 def borrow(request):
     authenticated = False
     if request.user.is_authenticated():
