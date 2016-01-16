@@ -9,8 +9,8 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.forms import UserCreationForm
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.core import serializers
-from models import Book, Borrow, Library, Reserve, Review
-from forms import ReviewForm, BorrowForm
+from models import Book, Borrow, Library, Reserve, Review, Profile
+from forms import ReviewForm, BorrowForm, ProfileForm
 from django.db.models import Q
 
 
@@ -103,18 +103,8 @@ def borrow_book(request, id_book):
             borrowed_book.save()
             borrowed = True
 
-
     return render_to_response("book_borrow.html", context_instance=RequestContext(request,
         {'authenticated': authenticated, 'book': book, 'form': form, 'borrowed': borrowed}))
-
-
-def borrow(request):
-    authenticated = False
-    if request.user.is_authenticated():
-        authenticated = True
-    print 'borrow'
-    return render_to_response("home.html", {'authenticated': authenticated,
-                                                'borrowed': True})
 
 def home(request):
     authenticated = False
@@ -231,10 +221,22 @@ def suggest(request):
         {'authenticated': authenticated}))
 
 
+@csrf_exempt
 def show_profile(request):
     authenticated = False
     if request.user.is_authenticated():
         authenticated = True
+    try:
+        profile_obj = Profile.objects.get(user=request.user)
+    except:
+        profile_obj = None
+
+    form = ProfileForm(request.POST or None, instance=profile_obj)
+    if request.method == 'POST':
+        if form.is_valid():
+            profile = form.save(commit=False)
+            profile.user = request.user
+            profile.save()
 
     return render_to_response("profile.html", context_instance=RequestContext(request,
-        {'authenticated': authenticated}))
+                              {'authenticated': authenticated, 'form': form}))
