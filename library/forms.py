@@ -6,7 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy
 from django.forms.models import ModelForm
-from models import Review, Borrow, Reserve, Profile
+from models import Review, Borrow, Reserve, Profile, Suggest
 from django.forms.fields import ChoiceField, CharField
 from django.utils.safestring import mark_safe
 
@@ -108,4 +108,21 @@ class ProfileForm(forms.ModelForm):
             'phone': forms.NumberInput(),
             'card_number': forms.NumberInput(),
             'card_cvv': forms.NumberInput()
+        }
+
+
+class SuggestForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(SuggestForm, self).__init__(*args, **kwargs)
+
+        self.fields['title'].required = True
+        self.fields['author'].required = True
+
+    class Meta:
+        model = Suggest
+        fields = ['title', 'author']
+
+        widgets = {
+            'title': forms.TextInput(),
+            'author': forms.TextInput()
         }

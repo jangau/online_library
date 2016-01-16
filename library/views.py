@@ -9,8 +9,8 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.forms import UserCreationForm
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.core import serializers
-from models import Book, Borrow, Library, Reserve, Review, Profile
-from forms import ReviewForm, BorrowForm, ReserveForm, ProfileForm
+from models import Book, Borrow, Library, Reserve, Review, Profile, Suggest
+from forms import ReviewForm, BorrowForm, ReserveForm, ProfileForm, SuggestForm
 from django.db.models import Q
 
 
@@ -127,12 +127,13 @@ def reserve_book(request, id_book):
     return render_to_response("book_reserve.html", context_instance=RequestContext(request,
         {'authenticated': authenticated, 'book': book, 'form': form, 'reserved': reserved}))
 
+
 def reserve(request):
     authenticated = False
     if request.user.is_authenticated():
         authenticated = True
     print 'reserve'
-    return render_to_response("home.html", {'authenticated': authenticated,
+    return render_to_response("book.html", {'authenticated': authenticated,
                                                 'reserved': True})
 
 def home(request):
@@ -230,15 +231,6 @@ def donate(request):
         {'authenticated': authenticated}))
 
 
-def suggest(request):
-    authenticated = False
-    if request.user.is_authenticated():
-        authenticated = True
-
-    return render_to_response("book_suggest.html", context_instance=RequestContext(request,
-        {'authenticated': authenticated}))
-
-
 @csrf_exempt
 def show_profile(request):
     authenticated = False
@@ -258,3 +250,22 @@ def show_profile(request):
 
     return render_to_response("profile.html", context_instance=RequestContext(request,
                               {'authenticated': authenticated, 'form': form}))
+
+
+@csrf_exempt
+def show_suggest(request):
+    authenticated = False
+    suggested = False
+    if request.user.is_authenticated():
+        authenticated = True
+
+    form = SuggestForm(request.POST or None)
+    if request.method == 'POST':
+        if form.is_valid():
+            profile = form.save(commit=False)
+            profile.user = request.user
+            profile.save()
+            suggested = True
+
+    return render_to_response("book_suggest.html", context_instance=RequestContext(request,
+                              {'authenticated': authenticated, 'form': form, 'suggested': suggested}))

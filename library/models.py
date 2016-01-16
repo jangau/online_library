@@ -89,6 +89,13 @@ class Reserve(models.Model):
     period = models.IntegerField()
 
 
+class Suggest(models.Model):
+    id_suggestion = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User)
+    title = models.CharField(max_length=100, blank=False)
+    author = models.CharField(max_length=100, blank=False)
+
+
 class Review(models.Model):
     id_review = models.AutoField(primary_key=True)
     user = models.ForeignKey(User)
