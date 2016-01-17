@@ -271,13 +271,19 @@ def suggest(request):
     return render_to_response("book_suggest.html", context_instance=RequestContext(request,
                               {'authenticated': authenticated, 'form': form, 'suggested': suggested}))
 
+                              
 @csrf_exempt
 def donate(request):
     authenticated = False
     donated = False
+    user_admin = False
+    if request.user.is_superuser and request.user.is_staff:
+        user_admin = True
     if request.user.is_authenticated():
         authenticated = True
 
+
+    donations = Donate.objects.values()
     form = DonateForm(request.POST or None)
     if request.method == 'POST':
         if form.is_valid():
@@ -287,7 +293,8 @@ def donate(request):
             donated = True
 
     return render_to_response("book_donate.html", context_instance=RequestContext(request,
-                              {'authenticated': authenticated, 'form': form, 'donated': donated}))
+                              {'authenticated': authenticated, 'user_admin' : user_admin,
+                               'donations' : donations, 'form': form, 'donated': donated}))
 
 
 @csrf_exempt

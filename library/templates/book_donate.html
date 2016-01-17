@@ -10,5 +10,24 @@
       </div>
     </form>
     {% endif %}
+    {% if user_admin %}
+    {% for donation in donations %}
+    <div class='col-xs-12'>
+        <div class='col-xs-6'>
+            <h2> {{ donation.title }} </h2>
+            <p> {{ donation.author }} </p>
+            <p> {{ donation.genre }} </p>
+        </div>
+        <div class='col-xs-6'>
+            <div class='col-xs-3'>
+                <a class="btn btn-info btn-lg pull-right">Accept</a>
+            </div>
+            <div class='col-xs-3'>
+                <a class="btn btn-info btn-lg pull-right">Reject</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
 
 {% endblock %}
