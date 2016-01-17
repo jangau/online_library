@@ -12,6 +12,7 @@ from django.core import serializers
 from models import Book, Borrow, Library, Reserve, Review, Profile, Suggest, Donate
 from forms import ReviewForm, BorrowForm, ReserveForm, ProfileForm, SuggestForm, DonateForm, ExtendForm
 from django.db.models import Q
+from django.core.mail import send_mail, EmailMessage
 
 
 def normalize_query(query_string,
@@ -105,6 +106,9 @@ def borrow_book(request, id_book):
             borrowed_book.user = request.user
             borrowed_book.save()
             borrowed = True
+            email_user(user=request.user,
+                       subject='borrow book',
+                       message='You have successfully borrowed' + borrowed_book.book.title + '!')
 
     return render_to_response("book_borrow.html", context_instance=RequestContext(request,
                                                                                   {'authenticated': authenticated,
@@ -128,6 +132,9 @@ def reserve_book(request, id_book):
             reserved_book.user = request.user
             reserved_book.save()
             reserved = True
+            email_user(user=request.user,
+                       subject='reserve book',
+                       message='You have successfully reserved' + reserved_book.book.title + '!')
 
     return render_to_response("book_reserve.html", context_instance=RequestContext(request,
                                                                                    {'authenticated': authenticated,
@@ -225,15 +232,6 @@ def register_user(request):
                               )
 
 
-def donate(request):
-    authenticated = False
-    if request.user.is_authenticated():
-        authenticated = True
-
-    return render_to_response("book_donate.html", context_instance=RequestContext(request,
-                                                                                  {'authenticated': authenticated}))
-
-
 @csrf_exempt
 def show_profile(request):
     authenticated = False
@@ -280,12 +278,19 @@ def suggest(request):
                                     'delete' + str(suggestion['id_suggestion']) in request.POST:
                 Suggest.objects.filter(id_donate=suggestion['id_suggestion']).delete()
                 smth = False
+                email_user(user=request.user,
+                           subject='donate book',
+                           message='Your book donation for' + suggestion.title + ' has been processed')
+
                 break
         if smth and form.is_valid():
-            profile = form.save(commit=False)
-            profile.user = request.user
-            profile.save()
+            suggestion = form.save(commit=False)
+            suggestion.user = request.user
+            suggestion.save()
             suggested = True
+            email_user(user=request.user,
+                       subject='donate book',
+                       message='Suggestion for' + suggestion.title + ' received')
 
     return render_to_response("book_suggest.html", context_instance=RequestContext(request,
                                                                                    {'authenticated': authenticated,
@@ -319,18 +324,27 @@ def donate(request):
                             )
                 book.save()
                 Donate.objects.filter(id_donate=donation['id_donate']).delete()
+                email_user(user=request.user,
+                           subject='donate book',
+                           message='Your book donation for' + donation.title + ' has been accepted')
                 smth = False
                 break
             if 'reject' + str(donation['id_donate']) in request.POST:
                 Donate.objects.filter(id_donate=donation['id_donate']).delete()
                 smth = False
+                email_user(user=request.user,
+                           subject='donate book',
+                           message='Your book donation for' + donation.title + ' has been declined')
                 break
         if smth and form.is_valid():
-            profile = form.save(commit=False)
-            profile.user = request.user
-            profile.image = form.cleaned_data['simage']
-            profile.save()
+            donation = form.save(commit=False)
+            donation.user = request.user
+            donation.image = form.cleaned_data['simage']
+            donation.save()
             donated = True
+            email_user(user=request.user,
+                       subject='donate book',
+                       message='Request for donating ' + donation.title + " received")
     donations = Donate.objects.values()
 
     return render_to_response("book_donate.html", context_instance=RequestContext(request,
@@ -355,8 +369,19 @@ def extend_borrow(request, id_book):
             days = int(form.cleaned_data['days'])
             book.date_return = new_date + timedelta(days=days)
             book.save()
+            email_user(user=request.user,
+                       subject='extend borrow',
+                       message='You have successfully extended book ' + book.book.title + ' for ' + str(days) + 'days')
             return HttpResponseRedirect("/profile/")
 
     return render_to_response("extend_borrow.html", context_instance=RequestContext(request,
                                                                                     {'authenticated': authenticated,
                                                                                      'form': form, 'book': book}))
+
+
+def email_user(user, subject, message):
+    profile = Profile.objects.get(user=user)
+    if profile.email is not None:
+        email = EmailMessage(subject=subject, body=message, to=[profile.email])
+        email.send(fail_silently=False)
+

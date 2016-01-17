@@ -65,7 +65,7 @@ class Book(models.Model):
         nrBorrowed = 0
         nrReserved = 0
         for borrowBook in Borrow.objects.all():
-            if borrowBook.book.ISBN == self.ISBN and borrowBook.date_return <= datetime.now().date():
+            if borrowBook.book.ISBN == self.ISBN and borrowBook.date_return > datetime.now().date():
                 nrBorrowed += 1
 
         # for reservedBook in Reserve.objects.all():
