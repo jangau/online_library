@@ -257,9 +257,13 @@ def show_profile(request):
 def suggest(request):
     authenticated = False
     suggested = False
+    user_admin = False
+    if request.user.is_superuser and request.user.is_staff:
+        user_admin = True
     if request.user.is_authenticated():
         authenticated = True
 
+    suggestions = Suggest.objects.values()
     form = SuggestForm(request.POST or None)
     if request.method == 'POST':
         if form.is_valid():
@@ -269,7 +273,8 @@ def suggest(request):
             suggested = True
 
     return render_to_response("book_suggest.html", context_instance=RequestContext(request,
-                              {'authenticated': authenticated, 'form': form, 'suggested': suggested}))
+                              {'authenticated': authenticated, 'user_admin' : user_admin,
+                               'suggestions' : suggestions, 'form': form, 'suggested': suggested}))
 
                               
 @csrf_exempt
@@ -281,7 +286,6 @@ def donate(request):
         user_admin = True
     if request.user.is_authenticated():
         authenticated = True
-
 
     donations = Donate.objects.values()
     form = DonateForm(request.POST or None)
