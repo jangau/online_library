@@ -137,6 +137,9 @@ class ExtendForm(forms.ModelForm):
 
 
 class DonateForm(forms.ModelForm):
+
+    simage = forms.ImageField(label='')
+
     def __init__(self, *args, **kwargs):
         super(DonateForm, self).__init__(*args, **kwargs)
 
@@ -144,18 +147,29 @@ class DonateForm(forms.ModelForm):
         self.fields['author'].required = True
         self.fields['genre'].required = True
         self.fields['ISBN'].required = True
+        self.fields['simage'].required = False
 
     def clean(self):
         cleaned_data = super(DonateForm, self).clean()
-        cleaned_isbn = cleaned_data.get('ISBN')
-        if cleaned_isbn:
-            if len(cleaned_isbn) != 13 and len(cleaned_isbn) != 10:
-                raise forms.ValidationError(u"Invalid ISBN! ", code='invalid')
+        if not ('accept' in self.data or 'reject' in self.data):
+            cleaned_isbn = cleaned_data.get('ISBN')
+            if cleaned_isbn:
+                if len(cleaned_isbn) != 13 and len(cleaned_isbn) != 10:
+                    raise forms.ValidationError(u"Invalid ISBN! ", code='invalid')
         return cleaned_data
+
+    def _post_clean(self):
+        super(DonateForm, self)._post_clean()
+        result = [(key, value) for key, value in self.data.iteritems() if key.startswith("accept") or key.startswith("reject")]
+        if len(result):
+            del self._errors['title']
+            del self._errors['author']
+            del self._errors['genre']
+            del self._errors['ISBN']
 
     class Meta:
         model = Donate
-        fields = ['title', 'author', 'genre', 'ISBN']
+        fields = ['title', 'author', 'genre', 'ISBN', 'simage']
 
         widgets = {
             'title': forms.TextInput(),

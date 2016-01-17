@@ -276,7 +276,7 @@ def suggest(request):
                               {'authenticated': authenticated, 'user_admin' : user_admin,
                                'suggestions' : suggestions, 'form': form, 'suggested': suggested}))
 
-                              
+
 @csrf_exempt
 def donate(request):
     authenticated = False
@@ -288,16 +288,35 @@ def donate(request):
         authenticated = True
 
     donations = Donate.objects.values()
-    form = DonateForm(request.POST or None)
+    form = DonateForm(request.POST or None, request.FILES or None)
     if request.method == 'POST':
-        if form.is_valid():
+        smth = True
+        for donation in donations:
+            if 'accept' + str(donation['id_donate']) in request.POST:
+                book = Book(ISBN=donation['ISBN'],
+                            title=donation['title'],
+                            author=donation['author'],
+                            genre=donation['genre'],
+                            image=donation['image']
+                            )
+                book.save()
+                Donate.objects.filter(id_donate=donation['id_donate']).delete()
+                smth = False
+                break
+            if 'reject' + str(donation['id_donate']) in request.POST:
+                Donate.objects.filter(id_donate=donation['id_donate']).delete()
+                smth = False
+                break
+        if smth and form.is_valid():
             profile = form.save(commit=False)
             profile.user = request.user
+            profile.image = form.cleaned_data['simage']
             profile.save()
             donated = True
+    donations = Donate.objects.values()
 
     return render_to_response("book_donate.html", context_instance=RequestContext(request,
-                              {'authenticated': authenticated, 'user_admin' : user_admin,
+                              {'authenticated': authenticated, 'user_admin': user_admin,
                                'donations' : donations, 'form': form, 'donated': donated}))
 
 

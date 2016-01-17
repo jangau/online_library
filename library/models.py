@@ -35,6 +35,9 @@ class Book(models.Model):
 
     def save(self):
         book = Book.objects.filter(ISBN=self.ISBN).first()
+        if self.library_id is None:
+            self.library_id = Library.objects.all().first().id_library
+
         if book is not None:
             self.title = book.title
             self.author = book.author
@@ -103,6 +106,7 @@ class Donate(models.Model):
     author = models.CharField(max_length=100, blank=False)
     genre = models.CharField(max_length=100, blank=False)
     ISBN = models.CharField(max_length=13, blank=False)
+    image = models.ImageField(upload_to='book_covers/', blank=True)
 
 
 class Review(models.Model):
