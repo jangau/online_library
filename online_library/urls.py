@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'^filter/$', views.search),
     url(r'^register/', views.register_user),
     url(r'^reserve/(?P<id_book>\d+)/$', views.reserve_book, name='reserve'),
+    url(r'^extend/(?P<id_book>\d+)/$', views.extend_borrow, name='extend'),
     url(r'^donate/$', views.donate),
     url(r'^suggest/$', views.suggest),
     url(r'^profile/$', views.show_profile),

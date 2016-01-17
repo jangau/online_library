@@ -1,8 +1,41 @@
-{% extends "index.html" %}
-{% block content %}     
-    <form action="" align="center" method="post">
-        {{ form.as_p }}
-        <button class="btn btn-info btn-lg" type="submit">Save</button>
-    </form>
+{% extends "index_no_search.html" %}
+{% block content %}
+    <div class="col-xs-9">
+        <div class="col-xs-6" align="left">
+            <h3 align="center"> Info</h3>
+            <form action=""  method="post">
+                {{ form.as_p }}
+                <button class="btn btn-info btn-lg" type="submit">Save</button>
+            </form>
+        </div>
+        <div class="col-xs-6" align="right">
+            <h3 align="center"> Borrowed books</h3>
+                <table>
+                    <tr class="row" style="padding-bottom: 3%">
+                        <th class='col-xs-3'>Name</th>
+                        <th class='col-xs-3'>Borrow Date</th>
+                        <th class='col-xs-3'>Return Date</th>
+                        <th class='col-xs-3'></th>
+                    </tr>
+
+                {% for borrowed_book in borrowed_books %}
+				<tr class="row" style="padding-bottom: 3%">
+                    <th class='col-xs-3'>
+                    <a href="{% url "book" id_book=borrowed_book.book.id_book %}">
+                        {{ borrowed_book.book.title }}
+                     </a>
+                    </th>
+                    <th class='col-xs-3'>{{ borrowed_book.date_borrowed }}</th>
+                    <th class='col-xs-3'>{{ borrowed_book.date_return }}</th>
+                    <th class='col-xs-3'>
+                        <a href="{% url "extend" id_book=borrowed_book.id_borrow %}" >Extend</a>
+                    </th>
+                </tr>
+                {% endfor %}
+                </table>
+        </div>
+        </div>
+    </div>
+
 
 {% endblock %}

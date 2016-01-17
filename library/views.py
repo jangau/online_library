@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -10,7 +10,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.core import serializers
 from models import Book, Borrow, Library, Reserve, Review, Profile, Suggest, Donate
-from forms import ReviewForm, BorrowForm, ReserveForm, ProfileForm, SuggestForm, DonateForm
+from forms import ReviewForm, BorrowForm, ReserveForm, ProfileForm, SuggestForm, DonateForm, ExtendForm
 from django.db.models import Q
 
 
@@ -128,15 +128,6 @@ def reserve_book(request, id_book):
         {'authenticated': authenticated, 'book': book, 'form': form, 'reserved': reserved}))
 
 
-def reserve(request):
-    authenticated = False
-    if request.user.is_authenticated():
-        authenticated = True
-    print 'reserve'
-    return render_to_response("book.html", {'authenticated': authenticated,
-                                                'reserved': True})
-
-
 def home(request):
     authenticated = False
     if request.user.is_authenticated():
@@ -214,6 +205,10 @@ def register_user(request):
         uform = UserCreationForm(request.POST)
         if uform.is_valid():
             new_user = uform.save()
+            profile_form = ProfileForm()
+            profile = profile_form.save(commit=False)
+            profile.name = uform.username
+            profile.user = request.user
             return HttpResponseRedirect("/home/")
     else:
         uform = UserCreationForm()
@@ -249,8 +244,13 @@ def show_profile(request):
             profile.user = request.user
             profile.save()
 
+    borrowed_books = Borrow.objects.filter(user=request.user, date_return__gte=datetime.now().date())
+    # TODO check if books are reserved
+    # What do we do if they are reserved? Don't show extend? How? :)
+
     return render_to_response("profile.html", context_instance=RequestContext(request,
-                              {'authenticated': authenticated, 'form': form}))
+                              {'authenticated': authenticated, 'form': form,
+                               'borrowed_books': borrowed_books}))
 
 
 @csrf_exempt
@@ -288,3 +288,24 @@ def donate(request):
 
     return render_to_response("book_donate.html", context_instance=RequestContext(request,
                               {'authenticated': authenticated, 'form': form, 'donated': donated}))
+
+
+@csrf_exempt
+def extend_borrow(request, id_book):
+    authenticated = False
+    if request.user.is_authenticated():
+        authenticated = True
+
+    book = Borrow.objects.get(id_borrow=id_book)
+    form = ExtendForm(request.POST or None)
+
+    if request.method == 'POST':
+        if form.is_valid():
+            new_date = book.date_return
+            days = int(form.cleaned_data['days'])
+            book.date_return = new_date + timedelta(days=days)
+            book.save()
+            return HttpResponseRedirect("/profile/")
+
+    return render_to_response("extend_borrow.html", context_instance=RequestContext(request,
+                              {'authenticated': authenticated, 'form': form, 'book': book}))

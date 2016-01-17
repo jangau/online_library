@@ -128,6 +128,14 @@ class SuggestForm(forms.ModelForm):
         }
 
 
+class ExtendForm(forms.ModelForm):
+    days = CharField(max_length=2, min_length=1, widget=NumberInput())
+
+    class Meta:
+        model = Borrow
+        fields = ['days']
+
+
 class DonateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(DonateForm, self).__init__(*args, **kwargs)
