@@ -23,7 +23,7 @@ def normalize_query(query_string,
         >>> normalize_query('  some random  words "with   quotes  " and   spaces')
         ['some', 'random', 'words', 'with quotes', 'and', 'spaces']
     '''
-    return [normspace(' ', (t[0] or t[1]).strip()) for t in findterms(query_string)] 
+    return [normspace(' ', (t[0] or t[1]).strip()) for t in findterms(query_string)]
 
 
 def get_query(query_string, search_fields):
@@ -78,12 +78,15 @@ def show_book(request, id_book):
     review_form = ReviewForm()
 
     if len(reviews):
-        rating = round(sum([float(review.rating) for review in reviews])/len(reviews), 2)
+        rating = round(sum([float(review.rating) for review in reviews]) / len(reviews), 2)
     else:
         rating = "No reviews yet"
 
     return render_to_response("book.html", context_instance=RequestContext(request,
-        {'authenticated': authenticated, 'book': book, 'reviews': reviews, 'review_form': review_form, 'rating':rating} ))
+                                                                           {'authenticated': authenticated,
+                                                                            'book': book, 'reviews': reviews,
+                                                                            'review_form': review_form,
+                                                                            'rating': rating}))
 
 
 @csrf_exempt
@@ -104,7 +107,9 @@ def borrow_book(request, id_book):
             borrowed = True
 
     return render_to_response("book_borrow.html", context_instance=RequestContext(request,
-        {'authenticated': authenticated, 'book': book, 'form': form, 'borrowed': borrowed}))
+                                                                                  {'authenticated': authenticated,
+                                                                                   'book': book, 'form': form,
+                                                                                   'borrowed': borrowed}))
 
 
 @csrf_exempt
@@ -125,7 +130,9 @@ def reserve_book(request, id_book):
             reserved = True
 
     return render_to_response("book_reserve.html", context_instance=RequestContext(request,
-        {'authenticated': authenticated, 'book': book, 'form': form, 'reserved': reserved}))
+                                                                                   {'authenticated': authenticated,
+                                                                                    'book': book, 'form': form,
+                                                                                    'reserved': reserved}))
 
 
 def home(request):
@@ -137,8 +144,8 @@ def home(request):
     for distinct_book in distinct_books:
         first_book = Book.objects.filter(ISBN=distinct_book['ISBN']).first()
         for check_book in Book.objects.filter(ISBN=first_book.ISBN):
-            if not Borrow.objects.filter(book=check_book).exists()\
-               or Borrow.objects.filter(date_return__lte=datetime.now().date(), book=check_book).exists():
+            if not Borrow.objects.filter(book=check_book).exists() \
+                    or Borrow.objects.filter(date_return__lte=datetime.now().date(), book=check_book).exists():
                 first_book = check_book
                 break
         books.append(first_book)
@@ -196,7 +203,7 @@ def login_user(request):
                 state = "Your account is not active, please contact the site admin."
         else:
             state = "Your username and/or password were incorrect."
-    return render_to_response('login.html', {'state':state, 'username': username})
+    return render_to_response('login.html', {'state': state, 'username': username})
 
 
 @csrf_protect
@@ -214,8 +221,8 @@ def register_user(request):
         uform = UserCreationForm()
     return render_to_response("register.html", {
         'uform': uform},
-        context_instance=RequestContext(request)
-    )
+                              context_instance=RequestContext(request)
+                              )
 
 
 def donate(request):
@@ -224,7 +231,7 @@ def donate(request):
         authenticated = True
 
     return render_to_response("book_donate.html", context_instance=RequestContext(request,
-        {'authenticated': authenticated}))
+                                                                                  {'authenticated': authenticated}))
 
 
 @csrf_exempt
@@ -249,8 +256,9 @@ def show_profile(request):
     # What do we do if they are reserved? Don't show extend? How? :)
 
     return render_to_response("profile.html", context_instance=RequestContext(request,
-                              {'authenticated': authenticated, 'form': form,
-                               'borrowed_books': borrowed_books}))
+                                                                              {'authenticated': authenticated,
+                                                                               'form': form,
+                                                                               'borrowed_books': borrowed_books}))
 
 
 @csrf_exempt
@@ -266,15 +274,25 @@ def suggest(request):
     suggestions = Suggest.objects.values()
     form = SuggestForm(request.POST or None)
     if request.method == 'POST':
-        if form.is_valid():
+        smth = True
+        for suggestion in suggestions:
+            if 'resolve' + str(suggestion['id_suggestion']) in request.POST or \
+                                    'delete' + str(suggestion['id_suggestion']) in request.POST:
+                Suggest.objects.filter(id_donate=suggestion['id_suggestion']).delete()
+                smth = False
+                break
+        if smth and form.is_valid():
             profile = form.save(commit=False)
             profile.user = request.user
             profile.save()
             suggested = True
 
     return render_to_response("book_suggest.html", context_instance=RequestContext(request,
-                              {'authenticated': authenticated, 'user_admin' : user_admin,
-                               'suggestions' : suggestions, 'form': form, 'suggested': suggested}))
+                                                                                   {'authenticated': authenticated,
+                                                                                    'user_admin': user_admin,
+                                                                                    'suggestions': suggestions,
+                                                                                    'form': form,
+                                                                                    'suggested': suggested}))
 
 
 @csrf_exempt
@@ -316,8 +334,10 @@ def donate(request):
     donations = Donate.objects.values()
 
     return render_to_response("book_donate.html", context_instance=RequestContext(request,
-                              {'authenticated': authenticated, 'user_admin': user_admin,
-                               'donations' : donations, 'form': form, 'donated': donated}))
+                                                                                  {'authenticated': authenticated,
+                                                                                   'user_admin': user_admin,
+                                                                                   'donations': donations, 'form': form,
+                                                                                   'donated': donated}))
 
 
 @csrf_exempt
@@ -338,4 +358,5 @@ def extend_borrow(request, id_book):
             return HttpResponseRedirect("/profile/")
 
     return render_to_response("extend_borrow.html", context_instance=RequestContext(request,
-                              {'authenticated': authenticated, 'form': form, 'book': book}))
+                                                                                    {'authenticated': authenticated,
+                                                                                     'form': form, 'book': book}))

@@ -118,6 +118,13 @@ class SuggestForm(forms.ModelForm):
         self.fields['title'].required = True
         self.fields['author'].required = True
 
+    def _post_clean(self):
+        super(SuggestForm, self)._post_clean()
+        result = [(key, value) for key, value in self.data.iteritems() if key.startswith("resolve") or key.startswith("delete")]
+        if len(result):
+            del self._errors['title']
+            del self._errors['author']
+
     class Meta:
         model = Suggest
         fields = ['title', 'author']
