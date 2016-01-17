@@ -9,8 +9,8 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.forms import UserCreationForm
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.core import serializers
-from models import Book, Borrow, Library, Reserve, Review, Profile, Suggest
-from forms import ReviewForm, BorrowForm, ReserveForm, ProfileForm, SuggestForm
+from models import Book, Borrow, Library, Reserve, Review, Profile, Suggest, Donate
+from forms import ReviewForm, BorrowForm, ReserveForm, ProfileForm, SuggestForm, DonateForm
 from django.db.models import Q
 
 
@@ -136,6 +136,7 @@ def reserve(request):
     return render_to_response("book.html", {'authenticated': authenticated,
                                                 'reserved': True})
 
+
 def home(request):
     authenticated = False
     if request.user.is_authenticated():
@@ -253,7 +254,7 @@ def show_profile(request):
 
 
 @csrf_exempt
-def show_suggest(request):
+def suggest(request):
     authenticated = False
     suggested = False
     if request.user.is_authenticated():
@@ -269,3 +270,21 @@ def show_suggest(request):
 
     return render_to_response("book_suggest.html", context_instance=RequestContext(request,
                               {'authenticated': authenticated, 'form': form, 'suggested': suggested}))
+
+@csrf_exempt
+def donate(request):
+    authenticated = False
+    donated = False
+    if request.user.is_authenticated():
+        authenticated = True
+
+    form = DonateForm(request.POST or None)
+    if request.method == 'POST':
+        if form.is_valid():
+            profile = form.save(commit=False)
+            profile.user = request.user
+            profile.save()
+            donated = True
+
+    return render_to_response("book_donate.html", context_instance=RequestContext(request,
+                              {'authenticated': authenticated, 'form': form, 'donated': donated}))

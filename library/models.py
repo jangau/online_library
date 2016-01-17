@@ -96,6 +96,15 @@ class Suggest(models.Model):
     author = models.CharField(max_length=100, blank=False)
 
 
+class Donate(models.Model):
+    id_donate = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User)
+    title = models.CharField(max_length=100, blank=False)
+    author = models.CharField(max_length=100, blank=False)
+    genre = models.CharField(max_length=100, blank=False)
+    ISBN = models.CharField(max_length=13, blank=False)
+
+
 class Review(models.Model):
     id_review = models.AutoField(primary_key=True)
     user = models.ForeignKey(User)

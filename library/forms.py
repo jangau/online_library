@@ -6,7 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy
 from django.forms.models import ModelForm
-from models import Review, Borrow, Reserve, Profile, Suggest
+from models import Review, Borrow, Reserve, Profile, Suggest, Donate
 from django.forms.fields import ChoiceField, CharField
 from django.utils.safestring import mark_safe
 
@@ -125,4 +125,33 @@ class SuggestForm(forms.ModelForm):
         widgets = {
             'title': forms.TextInput(),
             'author': forms.TextInput()
+        }
+
+
+class DonateForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(DonateForm, self).__init__(*args, **kwargs)
+
+        self.fields['title'].required = True
+        self.fields['author'].required = True
+        self.fields['genre'].required = True
+        self.fields['ISBN'].required = True
+
+    def clean(self):
+        cleaned_data = super(DonateForm, self).clean()
+        cleaned_isbn = cleaned_data.get('ISBN')
+        if cleaned_isbn:
+            if len(cleaned_isbn) != 13 and len(cleaned_isbn) != 10:
+                raise forms.ValidationError(u"Invalid ISBN! ", code='invalid')
+        return cleaned_data
+
+    class Meta:
+        model = Donate
+        fields = ['title', 'author', 'genre', 'ISBN']
+
+        widgets = {
+            'title': forms.TextInput(),
+            'author': forms.TextInput(),
+            'genre': forms.TextInput(),
+            'ISBN': forms.TextInput()
         }
